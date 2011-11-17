@@ -1,1 +1,4 @@
 modules/*.d
+bin/
+modules/*.o
+src/*.o
