@@ -1,11 +1,12 @@
-DHTTPCLIENT=https://github.com/Bystroushaak/DHTTPClient.git
-DHTMLPARSER=https://github.com/Bystroushaak/DHTMLParser.git
-DFAKEMAILER=https://github.com/Bystroushaak/DFakeMailer.git
-
 .PHONY: all
 .PHONY: download
 .PHONY: clean
 .PHONY: distclean
+
+# modules
+DHTTPCLIENT=https://github.com/Bystroushaak/DHTTPClient.git
+DHTMLPARSER=https://github.com/Bystroushaak/DHTMLParser.git
+DFAKEMAILER=https://github.com/Bystroushaak/DFakeMailer.git
 
 DC     = dmd
 DFLAGS = -c -O -release
