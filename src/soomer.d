@@ -12,14 +12,16 @@
  *     http://creativecommons.org/licenses/by/3.0/
 */
 import std.stdio;
+import std.array;
 import std.string;
-import std.file;
+import std.encoding;
 
 
 /// See https://github.com/Bystroushaak for details
 import dhttpclient;
 import dhtmlparser;
 import fakemailer_api;
+import utf_conv;
 
 
 
@@ -28,6 +30,8 @@ const string HELP_STR     = import("help.txt");
 const string VERSION_STR  = import("version.txt");
 
 const string CONF_PATH    = "~/.soomer/soomer.conf";
+
+HTTPClient cl;
 
 
 /// Return associative array with configuration parsed from string
@@ -62,8 +66,17 @@ string[string] processConf(string conf){
 }
 
 
+/// Returns title of given url.
+string getTitle(string url){
+	auto dom = parseString(win1250ShitToUTF8(cl.get(url)));
+	return dom.find("title")[0].getContent().strip().replace("\n", " ");
+}
+
+
 int main(string[] args){
-	writeln(processConf(EXAMPLE_CONF));
+	cl = new HTTPClient();
+	
+	writeln(getTitle("http://www.soom.cz/index.php?name=articles/show&aid=566"));
 	
 	return 0;
 }
