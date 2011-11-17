@@ -38,6 +38,17 @@ string[string] processConf(string conf){
 		if (line.indexOf("=") <= 0)
 			continue;
 		
+		// comments
+		if (line.indexOf("#") >= 0){
+			if (line.indexOf("#") == 0)
+				continue; 
+				
+			line = line[0 .. line.indexOf("#")];
+			
+			if (line.strip().length == 0)
+				continue;
+		}
+		
 		string[] tmp = line.split("=");
 		
 		// remove whitespaces from key & val
