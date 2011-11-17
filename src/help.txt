@@ -1,0 +1,22 @@
+Soomer by Bystroushaak (bystrousak@kitakitsune.org)
+
+./soomer [-h, -v] [-c PATH] [-a LINK, -r N]
+
+Parameters:
+	-a [LINK], --add [LINK]
+		Add new watch for link. If LINK not specified, read 
+		links from stdin.
+	
+	-r N, --remove N
+		Remove link from local database. 
+
+Optional parameters:
+	-c PATH, --config PATH
+		Specify new path for configuration file.
+		Default is "~/.soomer/config".
+	
+	-h, --help
+		Show this help.
+	
+	-v, --version
+		Show version.
