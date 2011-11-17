@@ -2,14 +2,6 @@
 # Version: 1.0.0
 # Date:    17.11.2011
 
-.PHONY: all
-.PHONY: modules
-.PHONY: toolkit
-.PHONY: run
-.PHONY: clean
-.PHONY: distclean
-.PHONY: help
-
 BIND    = bin
 SRCD    = src
 MODD    = modules
@@ -23,6 +15,14 @@ LDFLAGS =
 # get source & object filenames
 SRCS    = $(wildcard $(SRCD)/*.d)
 OBJS    = $(SRCS:.d=.o)
+
+.PHONY: all
+.PHONY: modules
+.PHONY: toolkit
+.PHONY: run
+.PHONY: clean
+.PHONY: distclean
+.PHONY: help
 
 all: modules $(OBJS)
 	-mkdir $(BIND)

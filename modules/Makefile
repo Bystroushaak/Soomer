@@ -1,12 +1,8 @@
-.PHONY: all
-.PHONY: download
-.PHONY: clean
-.PHONY: distclean
-
 # modules
 DHTTPCLIENT=https://github.com/Bystroushaak/DHTTPClient.git
 DHTMLPARSER=https://github.com/Bystroushaak/DHTMLParser.git
 DFAKEMAILER=https://github.com/Bystroushaak/DFakeMailer.git
+UTF_TOOLS  =https://github.com/Bystroushaak/utf_tools.git
 
 DC     = dmd
 DFLAGS = -c -O -release
@@ -18,6 +14,11 @@ all: download $(OBJS)
 
 %.o: %.d
 	$(DC) $(DFLAGS) $? -of$@
+
+.PHONY: all
+.PHONY: download
+.PHONY: clean
+.PHONY: distclean
 
 download:
 	@# check if git is installed
@@ -34,6 +35,7 @@ download:
 		git clone $(DHTMLPARSER); \
 		git clone $(DFAKEMAILER); \
 		(cd DFakeMailer; git checkout nslookup; cd ..); \
+		git clone $(UTF_TOOLS); \
 		mv */*.d ./; \
 		rm -fr */; \
 		echo; \
