@@ -51,7 +51,7 @@ clean:
 	-rm *.o 
 	-rm $(SRCD)/*.o
 	
-	cd $MODD; make clean
+	cd $(MODD); make clean
 	-rm -fr $(BIND)
 	
 distclean: clean

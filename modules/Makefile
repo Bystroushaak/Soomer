@@ -49,4 +49,4 @@ clean:
 	-rm *.o
 
 distclean: clean
-	-rm *.d 
+	-rm *.d
