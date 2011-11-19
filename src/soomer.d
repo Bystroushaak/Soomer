@@ -1,11 +1,11 @@
 /**
  * soomer.d
  *
- * Program ktery sleduje zadana vlakna na soomu a pokud v nich nastane zmena
+ * Program ktery sleduje zadana vlakna na soomu a pokud v nich nastane zmena,
  * upozorni na ni emailem uzivatele.
  * 
  * Author:  Bystroushaak (bystrousak@kitakitsune.org)
- * Date:    17.11.2011
+ * Date:    19.11.2011
  * 
  * Copyright: 
  *     This work is licensed under a CC BY.
@@ -32,6 +32,21 @@ const string VERSION_STR  = import("version.txt");
 const string CONF_PATH    = "~/.soomer/soomer.conf";
 
 HTTPClient cl;
+
+
+
+struct Comment{
+	string nickname;
+	string backlink;
+	string text;
+	
+	string toString(){
+		return "Nickname: " ~ this.nickname ~ "\n" ~
+		       "Backlink: " ~ this.backlink ~ "\n" ~
+		       "Text:\n" ~ this.text ~ "\n";
+	}
+}
+
 
 
 /// Return associative array with configuration parsed from string
@@ -73,10 +88,97 @@ string getTitle(string url){
 }
 
 
+/// Comments for articles
+Comment[] getArticleComments(string url){
+	Comment comment;
+	Comment[] comments;
+	
+	auto dom = parseString(win1250ShitToUTF8(cl.get(url)));
+	
+	foreach(e; dom.find("table", ["class":"obsahprisp"])){
+		// parse nickname
+		auto tmp = e.find("strong");
+		if (tmp.length >= 1)
+			comment.nickname = tmp[0].getContent();
+		
+		// no baclinks in articles/usertexts, so using url..
+		comment.backlink = url;
+		
+		tmp = e.findB("tr");
+		if (tmp.length >= 2)
+			comment.text = tmp[1].childs[0].getContent();
+		
+		// remove user sign
+		int io;
+		if ((io = comment.text.indexOf("----------")) > 0)
+			comment.text = comment.text[0 .. io];
+		
+		comment.text = comment.text.replace("<br />\n", "").strip(); //mg..
+		comments ~= comment;
+	}
+	
+	// remove garbage (first <td> is crap)
+	if (comments.length >= 1)
+		comments = comments[1 .. $];
+	
+	return comments;
+}
+
+
+/// Comments for webforum
+Comment[] getWebforumComments(string url){
+	Comment comment;
+	Comment[] comments;
+	
+	auto dom = parseString(win1250ShitToUTF8(cl.get(url)));
+	
+	foreach(e; dom.find("table", ["class":"obsahprisp"])[0 .. $ - 1]){ // last is new comment form
+		// parse nickname
+		auto tmp = e.find("td", ["class":"descr"]);
+		if (tmp.length >= 1)
+			comment.nickname = tmp[0].find("strong")[0].getContent();
+		
+		// parse baclink
+		tmp = e.find("a", ["title":"Link"]);
+		if (tmp.length >= 1)
+			comment.backlink = "http://soom.cz/" ~ tmp[0].params["href"];
+		
+		// parse text
+		int io;
+		comment.text = e.findB("tr")[1].find("td")[0].getContent();
+		if ((io = comment.text.indexOf("<br>")) > 0 && comment.text.length > 2)
+			comment.text = comment.text[0 .. io - 1];
+		
+		// remove user sign
+		if ((io = comment.text.indexOf("----------")) > 0)
+			comment.text = comment.text[0 .. io];
+		
+		comment.text = comment.text.replace("<br />\n", "").strip();
+		
+		comments ~= comment;
+	}
+	return comments;
+}
+
+
+/// wrapper for getWebforumComments && getArticleComments
+Comment[] getComments(string url){
+	string url_l = url.toLower();
+	if (url_l.indexOf("webforum/show") > 0 || url_l.indexOf("bugtrack/show") > 0)
+		return getWebforumComments(url);
+	else if (url_l.indexOf("discussion/main") > 0 || url_l.indexOf("comments") > 0)
+		return getArticleComments(url);
+	
+	throw new Exception("Unknown type of URL!");
+}
+
+
 int main(string[] args){
 	cl = new HTTPClient();
 	
-	writeln(getTitle("http://www.soom.cz/index.php?name=articles/show&aid=566"));
+//	writeln(getTitle("http://www.soom.cz/index.php?name=articles/show&aid=566"));
+
+	writeln(getComments("http://www.soom.cz/index.php?name=user/profile/comments&aid=118"));
 	
 	return 0;
 }
