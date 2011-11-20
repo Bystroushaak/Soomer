@@ -49,6 +49,31 @@ struct Comment{
 		
 		return dom.toString();
 	}
+	
+	static Comment[] readComments(string filename){
+		Comment comment;
+		Comment[] comments;
+
+		auto dom = parseString(std.file.readText(filename));
+		
+		foreach(c; dom.find("comment")){
+			comment.nickname = dom.find("nickname")[0].getContent();
+			comment.backlink = dom.find("backlink")[0].getContent();
+			comment.text = dom.find("text")[0].getContent();
+			
+			comments ~= comment;
+		}
+		
+		return comments;
+	}
+	
+	static void writeComments(string filename, Comment[] comments){
+		string o;
+		foreach(c; comments)
+			o ~= c.toString();
+		
+		std.file.write(filename, o);
+	}
 }
 
 
