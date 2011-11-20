@@ -37,10 +37,17 @@ struct Comment{
 	string backlink;
 	string text;
 	
+	/// returns xml string
 	string toString(){
-		return "Nickname: " ~ this.nickname ~ "\n" ~
-		       "Backlink: " ~ this.backlink ~ "\n" ~
-		       "Text:\n" ~ this.text ~ "\n";
+		auto dom = new HTMLElement([ // container
+			new HTMLElement("comment", [
+				new HTMLElement("nickname", [new HTMLElement(nickname)]),
+				new HTMLElement("backlink", [new HTMLElement(backlink)]),
+				new HTMLElement("text", [new HTMLElement(text)])
+			])
+		]);
+		
+		return dom.toString();
 	}
 }
 
