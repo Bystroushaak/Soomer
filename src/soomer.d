@@ -12,17 +12,16 @@
  *     http://creativecommons.org/licenses/by/3.0/
  
  TODO:
- 	Serializace komentaru do/z HTML
 */
 import std.stdio;
 import std.array;
 import std.string;
+import std.getopt;
 
 
 /// See https://github.com/Bystroushaak for details
-import dhttpclient;
-import dhtmlparser;
 import fakemailer_api;
+import conf_parser;
 
 import soom_api;
 
@@ -75,46 +74,126 @@ struct URL{
 
 
 
-/// Return associative array with configuration parsed from string
-string[string] processConf(string conf){
-	string[string] parsed_conf;
+int main(string[] args){
+	bool help, ver, multiple, list;
+	string add;
+	string config_path = CONF_PATH;
+	string[string] configuration;
 	
-	foreach(line; conf.splitLines()){
-		if (line.indexOf("=") <= 0)
-			continue;
-		
-		// comments
-		if (line.indexOf("#") >= 0){
-			if (line.indexOf("#") == 0)
-				continue; 
-				
-			line = line[0 .. line.indexOf("#")];
-			
-			if (line.strip().length == 0)
-				continue;
-		}
-		
-		string[] tmp = line.split("=");
-		
-		// remove whitespaces from key & val
-		tmp[0] = tmp[0].strip();
-		tmp[1] = tmp[1].strip();
-		
-		parsed_conf[tmp[0].toUpper()] = tmp[1];
+	// parse options
+	try{
+		getopt(
+			args,
+			std.getopt.config.bundling, // onechar shortcuts
+			"help|h", &help,
+			"version|v", &ver,
+			"multiple|m", &multiple,
+			"list|l", &list,
+			"add|a", &add,
+			"config|c", &config_path
+		);
+	}catch(Exception e){
+		stderr.writeln(HELP_STR);
+		return 1;
+	}
+	if (help){
+		writeln(HELP_STR);
+		return 0;
+	}else if (ver){
+		write(VERSION_STR);
+		return 0;
 	}
 	
-	return parsed_conf;
-}
-
-
-
-
-
-int main(string[] args){
-//	writeln(getTitle("http://www.soom.cz/index.php?name=articles/show&aid=566"));
-//	writeln(getComments("http://www.soom.cz/index.php?name=user/profile/comments&aid=118"));
+	// read configuration
+	try{
+		config_path = std.path.expandTilde(config_path);
+		configuration = parseConfiguration(std.file.readText(config_path), parseConfiguration(EXAMPLE_CONF));
+	}catch(Exception e){
+		stderr.writeln(e.msg);
+		stderr.write("Writing example configuration to '" ~ config_path ~ "' .. ");
+		
+		try{
+			std.file.mkdirRecurse(config_path[0 .. config_path.lastIndexOf("/")]);
+			std.file.write(config_path, EXAMPLE_CONF);
+		
+			stderr.writeln("ok");
+		}catch(Exception e){
+			stderr.writeln(e.msg);
+			return -1;
+		}
+		
+		configuration = parseConfiguration(std.file.readText(config_path), parseConfiguration(EXAMPLE_CONF));
+	}
+	// get absolute path based on just readed configuration
+	configuration["CONF_DIR"] = config_path[0 .. config_path.lastIndexOf("/")];
+	configuration["LINKS_FILE"] = configuration["CONF_DIR"] ~ "/" ~ configuration["LINKS_FILE"];
 	
-	writeln(URL.readURLs("test")[0].title);
+	// show all saved links
+	if (list){
+		URL[] urls;
+		try{
+			urls = URL.readURLs(configuration["LINKS_FILE"]);
+		}catch(Exception){ // handled in next if
+		}
+		
+		if (urls.length == 0){
+			stderr.writeln("There are no links in '" ~ configuration["LINKS_FILE"] ~ "'. Try add some with '--add' parameter.");
+			return 1;
+		}
+		
+		// list all stored urls
+		foreach(int i, URL u; urls){
+			writeln(i, "; ", u.title, " (", u.url, ")");
+		}
+		
+		return 0;;
+	}
+	
+	// read links from stdin if --multiple option selected
+	if (multiple){
+		add ~= "\n";
+		
+		foreach(string l; lines(stdin))
+			add ~= l ~ "\n";
+	}
+	// write links to configuration["LINKS_FILE"]
+	if (add != ""){
+		URL url;
+		URL[] urls;
+		
+		foreach(l; add.splitLines()){
+			l = l.strip();
+			
+			// skip crap
+			if (! l.toLower().startsWith("http://") || l.toLower().indexOf("soom.cz") <= 0)
+				continue;
+			
+			url.url = l;
+			
+			// try download title
+			try{
+				url.title = getTitle(l);
+			}catch(Exception e){
+				stderr.writeln(e.msg);
+				return 1;
+			}
+			
+			urls ~= url;
+		}
+		
+		URL.writeURLs(configuration["LINKS_FILE"], urls);
+	}
+	
+	// TODO remove link(s) from file
+	
+	// TODO check and send to mail
+
+
+//	writeln(getTitle("http://www.soom.cz/index.php?name=articles/show&aid=566"));
+//	Comment.writeComments("test", getComments("http://www.soom.cz/index.php?name=user/profile/comments&aid=118"));
+//	writeln(Comment.readComments("test")[0].text);
+	
+//	writeln(URL.readURLs("test")[0].title);
 	
 	return 0;
 }
