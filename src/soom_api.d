@@ -4,7 +4,7 @@
  * Soom.cz API.
  * 
  * Author:  Bystroushaak (bystrousak@kitakitsune.org)
- * Date:    19.11.2011
+ * Date:    20.11.2011
  * 
  * Copyright: 
  *     This work is licensed under a CC BY.
@@ -56,10 +56,11 @@ struct Comment{
 
 		auto dom = parseString(std.file.readText(filename));
 		
+		// deserialize comments from XML
 		foreach(c; dom.find("comment")){
 			comment.nickname = dom.find("nickname")[0].getContent();
 			comment.backlink = dom.find("backlink")[0].getContent();
-			comment.text = dom.find("text")[0].getContent();
+			comment.text     = dom.find("text")[0].getContent();
 			
 			comments ~= comment;
 		}
@@ -81,7 +82,7 @@ struct Comment{
 /// Returns title of given url.
 string getTitle(string url){
 	auto dom = parseString(win1250ShitToUTF8(cl.get(url)));
-	return dom.find("title")[0].getContent().strip().replace("\n", " ");
+	return dom.find("title")[0].getContent().strip().replace("\n", " ").replace("SOOM.cz - ", "");
 }
 
 
