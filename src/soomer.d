@@ -5,23 +5,26 @@
  * upozorni na ni emailem uzivatele.
  * 
  * Author:  Bystroushaak (bystrousak@kitakitsune.org)
- * Date:    19.11.2011
+ * Date:    20.11.2011
  * 
  * Copyright: 
  *     This work is licensed under a CC BY.
  *     http://creativecommons.org/licenses/by/3.0/
+ 
+ TODO:
+ 	Serializace komentaru do/z HTML
 */
 import std.stdio;
 import std.array;
 import std.string;
-import std.encoding;
 
 
 /// See https://github.com/Bystroushaak for details
 import dhttpclient;
 import dhtmlparser;
 import fakemailer_api;
-import utf_conv;
+
+import soom_api;
 
 
 
@@ -31,19 +34,42 @@ const string VERSION_STR  = import("version.txt");
 
 const string CONF_PATH    = "~/.soomer/soomer.conf";
 
-HTTPClient cl;
 
 
-
-struct Comment{
-	string nickname;
-	string backlink;
-	string text;
+/// Struct used for storing URL; title pairs with some serialization methods.
+struct URL{
+	public string url;        ///
+	public string title;      ///
 	
-	string toString(){
-		return "Nickname: " ~ this.nickname ~ "\n" ~
-		       "Backlink: " ~ this.backlink ~ "\n" ~
-		       "Text:\n" ~ this.text ~ "\n";
+	/// Return list of URLs parsed from filename
+	static URL[] readURLs(string filename){
+		int io;
+		URL tmp;
+		URL[] o;
+		
+		foreach(string l; lines(File(filename, "r"))){
+			if ((io = l.indexOf(";")) > 0){
+				tmp.url   = l[0 .. io];
+				tmp.title = l[io + 2 .. $ - 1]; // remove \n from the end
+				
+				o ~= tmp;
+			}
+		}
+		
+		return o;
+	}
+	
+	/// Save list of URLs to filename
+	static void writeURLs(string filename, URL[] urls){
+		string o;
+		foreach(u; urls)
+			o ~= u.toString();
+		
+		std.file.write(filename, o);
+	}
+	
+	public string toString(){
+		return this.url ~ "; " ~ this.title.strip().replace("\n", "") ~ "\n";
 	}
 }
 
@@ -81,104 +107,14 @@ string[string] processConf(string conf){
 }
 
 
-/// Returns title of given url.
-string getTitle(string url){
-	auto dom = parseString(win1250ShitToUTF8(cl.get(url)));
-	return dom.find("title")[0].getContent().strip().replace("\n", " ");
-}
 
-
-/// Comments for articles
-Comment[] getArticleComments(string url){
-	Comment comment;
-	Comment[] comments;
-	
-	auto dom = parseString(win1250ShitToUTF8(cl.get(url)));
-	
-	foreach(e; dom.find("table", ["class":"obsahprisp"])){
-		// parse nickname
-		auto tmp = e.find("strong");
-		if (tmp.length >= 1)
-			comment.nickname = tmp[0].getContent();
-		
-		// no baclinks in articles/usertexts, so using url..
-		comment.backlink = url;
-		
-		tmp = e.findB("tr");
-		if (tmp.length >= 2)
-			comment.text = tmp[1].childs[0].getContent();
-		
-		// remove user sign
-		int io;
-		if ((io = comment.text.indexOf("----------")) > 0)
-			comment.text = comment.text[0 .. io];
-		
-		comment.text = comment.text.replace("<br />\n", "").strip(); //mg..
-		comments ~= comment;
-	}
-	
-	// remove garbage (first <td> is crap)
-	if (comments.length >= 1)
-		comments = comments[1 .. $];
-	
-	return comments;
-}
-
-
-/// Comments for webforum
-Comment[] getWebforumComments(string url){
-	Comment comment;
-	Comment[] comments;
-	
-	auto dom = parseString(win1250ShitToUTF8(cl.get(url)));
-	
-	foreach(e; dom.find("table", ["class":"obsahprisp"])[0 .. $ - 1]){ // last is new comment form
-		// parse nickname
-		auto tmp = e.find("td", ["class":"descr"]);
-		if (tmp.length >= 1)
-			comment.nickname = tmp[0].find("strong")[0].getContent();
-		
-		// parse baclink
-		tmp = e.find("a", ["title":"Link"]);
-		if (tmp.length >= 1)
-			comment.backlink = "http://soom.cz/" ~ tmp[0].params["href"];
-		
-		// parse text
-		int io;
-		comment.text = e.findB("tr")[1].find("td")[0].getContent();
-		if ((io = comment.text.indexOf("<br>")) > 0 && comment.text.length > 2)
-			comment.text = comment.text[0 .. io - 1];
-		
-		// remove user sign
-		if ((io = comment.text.indexOf("----------")) > 0)
-			comment.text = comment.text[0 .. io];
-		
-		comment.text = comment.text.replace("<br />\n", "").strip();
-		
-		comments ~= comment;
-	}
-	return comments;
-}
-
-
-/// wrapper for getWebforumComments && getArticleComments
-Comment[] getComments(string url){
-	string url_l = url.toLower();
-	if (url_l.indexOf("webforum/show") > 0 || url_l.indexOf("bugtrack/show") > 0)
-		return getWebforumComments(url);
-	else if (url_l.indexOf("discussion/main") > 0 || url_l.indexOf("comments") > 0)
-		return getArticleComments(url);
-	
-	throw new Exception("Unknown type of URL!");
-}
 
 
 int main(string[] args){
-	cl = new HTTPClient();
-	
 //	writeln(getTitle("http://www.soom.cz/index.php?name=articles/show&aid=566"));
-
-	writeln(getComments("http://www.soom.cz/index.php?name=user/profile/comments&aid=118"));
+//	writeln(getComments("http://www.soom.cz/index.php?name=user/profile/comments&aid=118"));
+	
+	writeln(URL.readURLs("test")[0].title);
 	
 	return 0;
 }
