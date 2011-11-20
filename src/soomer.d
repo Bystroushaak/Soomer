@@ -17,6 +17,7 @@ import std.stdio;
 import std.array;
 import std.string;
 import std.getopt;
+import std.algorithm : remove;
 
 
 /// See https://github.com/Bystroushaak for details
@@ -76,7 +77,7 @@ struct URL{
 
 int main(string[] args){
 	bool help, ver, multiple, list;
-	string add;
+	string add, remove;
 	string config_path = CONF_PATH;
 	string[string] configuration;
 	
@@ -90,6 +91,7 @@ int main(string[] args){
 			"multiple|m", &multiple,
 			"list|l", &list,
 			"add|a", &add,
+			"remove|r", &remove,
 			"config|c", &config_path
 		);
 	}catch(Exception e){
@@ -160,6 +162,10 @@ int main(string[] args){
 	if (add != ""){
 		URL url;
 		URL[] urls;
+		try{
+			urls = URL.readURLs(configuration["LINKS_FILE"]);
+		}catch(Exception){ // handled in next if
+		}
 		
 		foreach(l; add.splitLines()){
 			l = l.strip();
@@ -184,7 +190,71 @@ int main(string[] args){
 		URL.writeURLs(configuration["LINKS_FILE"], urls);
 	}
 	
-	// TODO remove link(s) from file
+	// remove link(s) from file
+	if (remove != ""){
+		URL[] urls;
+		try{
+			urls = URL.readURLs(configuration["LINKS_FILE"]);
+		}catch(Exception){ // handled in next if
+		}
+		if (urls.length == 0){
+			stderr.writeln("There are no links in '" ~ configuration["LINKS_FILE"] ~ "'. Try add some with '--add' parameter.");
+			return 1;
+		}
+		
+		// parse range
+		int[2] range;
+		string[] s_range;
+		if (remove.indexOf("..") > 0)
+			s_range = remove.split("..");
+		else if (remove.indexOf("-") > 0)
+			s_range = remove.split("..");
+		else{
+			try{
+				range[0] = std.conv.to!int(remove);
+			}catch(Exception e){
+				stderr.writeln(e.msg);
+				return 2;
+			}
+			
+			// check number range
+			if (range[0] < 0 || range[0] > urls.length - 1){
+				stderr.writeln("Bad index in '--remove' parameter. Run --list for indexes.");
+				return 2;
+			}
+			
+			urls = urls.remove(range[0]);
+			URL.writeURLs(configuration["LINKS_FILE"], urls);
+			
+			return 0;
+		}
+		
+		s_range[0] = s_range[0].strip();
+		s_range[1] = s_range[1].strip();
+		
+		// convert range to int
+		try{
+			range[0] = std.conv.to!int(s_range[0]);
+			range[1] = std.conv.to!int(s_range[1]);
+		}catch(Exception e){
+			stderr.writeln(e.msg);
+			return 2;
+		}
+		
+		// check given range
+		if (range[0] >= range[1] || range[0] < 0 || range[1] > urls.length - 1){
+			stderr.writeln("Bad range!");
+			return 2;
+		}
+		
+		// remove elements from url
+		for(int i = range[0]; i <= range[1]; i++){
+			urls = urls.remove(i);
+		}
+		
+		URL.writeURLs(configuration["LINKS_FILE"], urls);
+		return 0;
+	}
 	
 	// TODO check and send to mail
 
