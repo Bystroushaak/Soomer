@@ -2,10 +2,18 @@ Soomer by Bystroushaak (bystrousak@kitakitsune.org)
 
 ./soomer [-h, -v] [-c PATH] [-a LINK, -r N]
 
+If run without parameters, program checks all watches and send email if detected
+changes.
+
 Parameters:
 	-a [LINK], --add [LINK]
-		Add new watch for link. If LINK not specified, read 
-		links from stdin.
+		Add new watch for link.
+	
+	-m, --multiple
+		Add multiple links (reads from stdin).
+
+	-l, --list
+		List all links.
 	
 	-r N, --remove N
 		Remove link from local database. 
