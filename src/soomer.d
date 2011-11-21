@@ -5,19 +5,18 @@
  * upozorni na ni emailem uzivatele.
  * 
  * Author:  Bystroushaak (bystrousak@kitakitsune.org)
- * Date:    20.11.2011
+ * Date:    21.11.2011
  * 
  * Copyright: 
  *     This work is licensed under a CC BY.
  *     http://creativecommons.org/licenses/by/3.0/
- 
- TODO:
 */
 import std.stdio;
 import std.array;
 import std.string;
 import std.getopt;
-import std.algorithm : remove;
+import std.md5       : getDigestString;
+import std.algorithm : remove, find;
 
 
 /// See https://github.com/Bystroushaak for details
@@ -130,14 +129,19 @@ int main(string[] args){
 	configuration["CONF_DIR"] = config_path[0 .. config_path.lastIndexOf("/")];
 	configuration["LINKS_FILE"] = configuration["CONF_DIR"] ~ "/" ~ configuration["LINKS_FILE"];
 	
+	
+	
+	// read saved urls - usefull for all following options
+	URL[] urls;
+	try{
+		urls = URL.readURLs(configuration["LINKS_FILE"]);
+	}catch(Exception){ // handled later
+	}
+	
+	
+	
 	// show all saved links
 	if (list){
-		URL[] urls;
-		try{
-			urls = URL.readURLs(configuration["LINKS_FILE"]);
-		}catch(Exception){ // handled in next if
-		}
-		
 		if (urls.length == 0){
 			stderr.writeln("There are no links in '" ~ configuration["LINKS_FILE"] ~ "'. Try add some with '--add' parameter.");
 			return 1;
@@ -151,6 +155,7 @@ int main(string[] args){
 		return 0;;
 	}
 	
+	
 	// read links from stdin if --multiple option selected
 	if (multiple){
 		add ~= "\n";
@@ -158,15 +163,13 @@ int main(string[] args){
 		foreach(string l; lines(stdin))
 			add ~= l ~ "\n";
 	}
+	
+	
 	// write links to configuration["LINKS_FILE"]
 	if (add != ""){
 		URL url;
-		URL[] urls;
-		try{
-			urls = URL.readURLs(configuration["LINKS_FILE"]);
-		}catch(Exception){ // handled in next if
-		}
 		
+		// add links
 		foreach(l; add.splitLines()){
 			l = l.strip();
 			
@@ -192,11 +195,6 @@ int main(string[] args){
 	
 	// remove link(s) from file
 	if (remove != ""){
-		URL[] urls;
-		try{
-			urls = URL.readURLs(configuration["LINKS_FILE"]);
-		}catch(Exception){ // handled in next if
-		}
 		if (urls.length == 0){
 			stderr.writeln("There are no links in '" ~ configuration["LINKS_FILE"] ~ "'. Try add some with '--add' parameter.");
 			return 1;
@@ -223,6 +221,11 @@ int main(string[] args){
 				return 2;
 			}
 			
+			// try remove files with comments
+			try{
+				std.file.remove(configuration["CONF_DIR"] ~ "/" ~ getDigestString(urls[range[0]].url));
+			}catch(Exception){
+			}
 			urls = urls.remove(range[0]);
 			URL.writeURLs(configuration["LINKS_FILE"], urls);
 			
@@ -249,22 +252,80 @@ int main(string[] args){
 		
 		// remove elements from url
 		for(int i = range[0]; i <= range[1]; i++){
+			// try remove files with comments
+			try{
+				std.file.remove(configuration["CONF_DIR"] ~ "/" ~ getDigestString(urls[i].url));
+			}catch(Exception){
+			}
+			
 			urls = urls.remove(i);
 		}
 		
+		// write new data
 		URL.writeURLs(configuration["LINKS_FILE"], urls);
 		return 0;
 	}
 	
 	// TODO check and send to mail
-
-
-//	writeln(getTitle("http://www.soom.cz/index.php?name=articles/show&aid=566"));
-//	Comment.writeComments("test", getComments("http://www.soom.cz/index.php?name=user/profile/comments&aid=118"));
-//	writeln(Comment.readComments("test")[0].text);
-	
-//	writeln(URL.readURLs("test")[0].title);
-	
+	foreach(url; urls){
+		auto fresh_comments  = getComments(url.url);
+		string filename      = configuration["CONF_DIR"] ~ "/" ~ getDigestString(url.url); // filename = md5(url)
+		
+		// read comments from disk
+		Comment[] saved_comments = null;
+		try{
+			saved_comments = Comment.readComments(filename);
+		}catch(Exception){ // if reading fails (file not created yet), try save comments to file
+			try{
+				Comment.writeComments(filename, fresh_comments);
+				continue;
+			}catch(Exception e){ // if can't write comments..
+				stderr.writeln(e.msg);
+				return 1;
+			}
+		}
+		
+		// detect chages between saved and online data
+		Comment[] for_send = null;
+		foreach(cmnt; fresh_comments){
+			if (saved_comments.find(cmnt).empty)
+				for_send ~= cmnt;
+		}
+		
+		// if changes detected
+		if (!for_send.empty){
+			// compose mail message
+			string s_comments = "New comments at " ~ url.title ~ " (" ~ url.url ~ ")\n\n";
+			foreach(cmnt; for_send){
+				s_comments ~= cmnt.nickname ~ ":\n";
+				s_comments ~= cmnt.text ~ "\n\n";
+				s_comments ~= cmnt.backlink ~ "\n\n";
+				s_comments ~= "---\n\n";
+			}
+			
+			// send mail with changes
+			try{
+				sendMail(
+					configuration["MAIL_FROM"],
+					configuration["MAIL_TO"],
+					"Changes at " ~ url.title ~ "(" ~ url.url ~ ")",
+					s_comments
+				);
+			}catch(Exception e){
+				stderr.writeln(e);
+				return 11;
+			}
+			
+			// save data
+			try{
+				Comment.writeComments(filename, fresh_comments);
+				continue;
+			}catch(Exception e){ // if can't write comments..
+				stderr.writeln(e.msg);
+				return 1;
+			}
+		}
+	}
 	return 0;
 }
 
