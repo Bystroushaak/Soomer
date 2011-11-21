@@ -1,0 +1,70 @@
+= Soomer
+== Co je to Soomer?
+Soomer je program napsaný v D, který sleduje změny v diskuzích na stránkách soom.cz. Pokud změny detekuje, odešle o tom email uživateli nastavenému v konfiguračním souboru.
+
+== Jak to použít?
+Spuštěním programu s parametrem {{{--add "URL"}}} přidáte URL **diskuze** (nedávejte mu odkaz na článek, ale diskuzi k článku) kterou chcete sledovat. Můžete taky použít parametr {{{--multiple}}}, kdy program očekává seznam odkazů na standardním vstupu.
+
+Pokud program spustíte bez parametrů, načte zadanou stránku, podívá se co je tam za komentáře a uloží je.
+
+Pokud program opět spustíte bez parametrů, zase načte stránku, podívá se co je tam za komentáře, ale tentokrát je porovná s již uloženými. Pokud dojde k nějakým změnám, pošle vám email který ty změny shrnuje. Email je v UTF.
+
+Když chcete vypsat všechny sledované diskuze, použijte parametr {{{--list}}}, který vypíše číslo označující pořadí odkazu, titulek stránky a samotný odkaz.
+
+Pokud chcete nějaký prvek odstranit, použijte parametr {{{--remove N}}}, kde N je pořadové číslo vypsané pomocí {{{--list}}}. Můžete použít i rozsah specifikovaný pomocí {{{--remove N..M}}}, nebo {{{--remove N-M}}}, za předpokladu že N<M, N >= 0 a M < počet sledovaných odkazů.
+
+== Konfigurace
+Program si ukládá konfiguraci do adresáře {{{~/.soomer}}}. Zde najdete soubor {{{config}}}, ve kterém můžete nastavit emailovou adresu na kterou budou změny odesílány. Do tohoto adresáře jsou také ukládány komentáře k textům.
+
+== Kompilace
+Program používá relativně chytré Makefile, takže jediné co potřebujete je mít nainstalovaný GIT a [[http://www.digitalmars.com/d/download.html|DMD]] verze 2.055 a vyšší. Spuštěním příkazu {{{make}}} si program sám stáhne všechny potřebné moduly, zkompiluje je a uloží do složky {{{bin}}}.
+
+== FFAQ
+Budoucí Často Kladené Otázky za předpokladu že program bude používat někdo kdo je bude klást.
+
+=== Program umí sledovat jen komentáře k článkům, nebo i webforum?
+Program umí sledovat vše kde se diskutuje, tedy i diskuze k uživateli, aktualitám a já nevím čemu ještě (fakt to nevím, detekuje to na základě slova {{{comments}}} v URL).
+
+=== Proč jsou titulky diskuze u článků bez názvu článku?
+Protože soom se tak prostě chová a jméno diskuze nelze jednoduše zjistit.
+
+=== Funguje program i na Windows?
+D je mutiplatformní jazyk, takže s nějakými těmi triviálními úpravami ano, v základu však ne. Windows mě nezajímají, nepoužívám je. Pokud chcete verzi pro windows, zaplaťte si někoho (mě :P) kdo to upraví, nebo se naučte D, je to pěkný jazyk ;).
+
+=== To musím program vždy ručně spouštět abych se dozvěděl co je nového?
+Použij [[http://cs.wikipedia.org/wiki/Cron|cron]].
+
+
+== Nápověda
+{{{
+Soomer by Bystroushaak (bystrousak@kitakitsune.org)
+
+./soomer [-h, -v] [-c PATH] [-a LINK, -r N]
+
+If run without parameters, program checks all watches and send email if detected
+changes.
+
+Parameters:
+	-a [LINK], --add [LINK]
+		Add new watch for link.
+	
+	-m, --multiple
+		Add multiple links (reads from stdin).
+
+	-l, --list
+		List all links.
+	
+	-r N, --remove N
+		Remove link from local database. 
+
+Optional parameters:
+	-c PATH, --config PATH
+		Specify new path for configuration file.
+		Default is "~/.soomer/soomer.conf".
+	
+	-h, --help
+		Show this help.
+	
+	-v, --version
+		Show version.
+}}}
