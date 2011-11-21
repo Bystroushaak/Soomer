@@ -22,7 +22,7 @@ Program používá relativně chytré Makefile, takže jediné co potřebujete j
 == FFAQ
 Budoucí Často Kladené Otázky za předpokladu že program bude používat někdo kdo je bude klást.
 
-=== Program umí sledovat jen komentáře k článkům, nebo i webforum?
+=== Program umí sledovat jen komentáře ke článkům, nebo i webforum?
 Program umí sledovat vše kde se diskutuje, tedy i diskuze k uživateli, aktualitám a já nevím čemu ještě (fakt to nevím, detekuje to na základě slova {{{comments}}} v URL).
 
 === Proč jsou titulky diskuze u článků bez názvu článku?
