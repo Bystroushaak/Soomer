@@ -54,13 +54,11 @@ struct Comment{
 		Comment comment;
 		Comment[] comments;
 
-		auto dom = parseString(std.file.readText(filename));
-		
 		// deserialize comments from XML
-		foreach(c; dom.find("comment")){
-			comment.nickname = dom.find("nickname")[0].getContent();
-			comment.backlink = dom.find("backlink")[0].getContent();
-			comment.text     = dom.find("text")[0].getContent();
+		foreach(c; parseString(std.file.readText(filename)).find("comment")){
+			comment.nickname = c.find("nickname")[0].getContent();
+			comment.backlink = c.find("backlink")[0].getContent();
+			comment.text     = c.find("text")[0].getContent();
 			
 			comments ~= comment;
 		}
@@ -74,6 +72,10 @@ struct Comment{
 			o ~= c.toString();
 		
 		std.file.write(filename, o);
+	}
+	
+	const bool opEquals(ref const(Comment) rhs) {
+		return (this.nickname == rhs.nickname && this.backlink == rhs.backlink && this.text.replace("\n", "") == rhs.text.replace("\n", ""));
 	}
 }
 
@@ -111,7 +113,7 @@ Comment[] getArticleComments(string url){
 		if ((io = comment.text.indexOf("----------")) > 0)
 			comment.text = comment.text[0 .. io];
 		
-		comment.text = comment.text.replace("<br />\n", "").strip(); //mg..
+		comment.text = comment.text.replace("<br />\r\n", "").replace("<br />\n\r", "").replace("<br />\n", "").strip(); //mg..
 		comments ~= comment;
 	}
 	
