@@ -16,7 +16,7 @@ import std.array;
 import std.string;
 import std.getopt;
 import std.md5       : getDigestString;
-import std.algorithm : remove, find;
+import std.algorithm : remove, countUntil;
 
 
 /// See https://github.com/Bystroushaak for details
@@ -266,13 +266,13 @@ int main(string[] args){
 		return 0;
 	}
 	
-	// TODO check and send to mail
+	// check comments and send new to mail
 	foreach(url; urls){
 		auto fresh_comments  = getComments(url.url);
 		string filename      = configuration["CONF_DIR"] ~ "/" ~ getDigestString(url.url); // filename = md5(url)
 		
 		// read comments from disk
-		Comment[] saved_comments = null;
+		Comment[] saved_comments;
 		try{
 			saved_comments = Comment.readComments(filename);
 		}catch(Exception){ // if reading fails (file not created yet), try save comments to file
@@ -287,10 +287,9 @@ int main(string[] args){
 		
 		// detect chages between saved and online data
 		Comment[] for_send = null;
-		foreach(cmnt; fresh_comments){
-			if (saved_comments.find(cmnt).empty)
+		foreach(cmnt; fresh_comments)
+			if (saved_comments.countUntil(cmnt) < 0)
 				for_send ~= cmnt;
-		}
 		
 		// if changes detected
 		if (!for_send.empty){
@@ -319,7 +318,6 @@ int main(string[] args){
 			// save data
 			try{
 				Comment.writeComments(filename, fresh_comments);
-				continue;
 			}catch(Exception e){ // if can't write comments..
 				stderr.writeln(e.msg);
 				return 1;
