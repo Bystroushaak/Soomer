@@ -294,7 +294,7 @@ int main(string[] args){
 		// if changes detected
 		if (!for_send.empty){
 			// compose mail message
-			string s_comments = "New comments at " ~ url.title ~ " (" ~ url.url ~ ")\n\n";
+			string s_comments = "New comments at '" ~ url.title ~ "' (" ~ url.url ~ ")\n\n";
 			foreach(cmnt; for_send){
 				s_comments ~= cmnt.nickname ~ ":\n";
 				s_comments ~= cmnt.text ~ "\n\n";
@@ -307,7 +307,7 @@ int main(string[] args){
 				sendMail(
 					configuration["MAIL_FROM"],
 					configuration["MAIL_TO"],
-					"Changes at " ~ url.title ~ "(" ~ url.url ~ ")",
+					"Changes at '" ~ url.title ~ "' (" ~ url.url ~ ")",
 					s_comments
 				);
 			}catch(Exception e){
