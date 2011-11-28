@@ -1,6 +1,6 @@
 Soomer by Bystroushaak (bystrousak@kitakitsune.org)
 
-./soomer [-h, -v] [-c PATH] [-a LINK, -r N]
+./soomer [-h, -v] [-c PATH] [-a LINK, -r N, -m, -l]
 
 If run without parameters, program checks all watches and send email if detected
 changes.

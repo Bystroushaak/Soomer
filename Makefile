@@ -5,11 +5,12 @@
 BIND    = bin
 SRCD    = src
 MODD    = modules
+RESD    = resources
 
 PROG    = $(BIND)/soomer
 
 DC      = dmd
-DFLAGS  = -I$(MODD)/ -I$(SRCD)/ -J$(SRCD)/ -c -O -debug
+DFLAGS  = -I$(MODD)/ -I$(SRCD)/ -J$(RESD)/ -c -O -debug
 LDFLAGS =
 
 # get source & object filenames
