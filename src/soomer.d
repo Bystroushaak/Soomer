@@ -5,7 +5,7 @@
  * upozorni na ni emailem uzivatele.
  * 
  * Author:  Bystroushaak (bystrousak@kitakitsune.org)
- * Date:    21.11.2011
+ * Date:    28.11.2011
  * 
  * Copyright: 
  *     This work is licensed under a CC BY.
@@ -294,9 +294,9 @@ int main(string[] args){
 		// if changes detected
 		if (!for_send.empty){
 			// compose mail message
-			string s_comments = "New comments at '" ~ url.title ~ "' (" ~ url.url ~ ")\n\n";
+			string s_comments = "New comments at '" ~ url.title.strip() ~ "' (" ~ url.url ~ ")\n\n";
 			foreach(cmnt; for_send){
-				s_comments ~= cmnt.nickname ~ ":\n";
+				s_comments ~= "* " ~ cmnt.nickname.strip() ~ ": *\n";
 				s_comments ~= cmnt.text ~ "\n\n";
 				s_comments ~= cmnt.backlink ~ "\n\n";
 				s_comments ~= "---\n\n";
