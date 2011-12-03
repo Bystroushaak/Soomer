@@ -296,7 +296,7 @@ int main(string[] args){
 			// compose mail message
 			string s_comments = "New comments at '" ~ url.title.strip() ~ "' (" ~ url.url ~ ")\n\n";
 			foreach(cmnt; for_send){
-				s_comments ~= "* " ~ cmnt.nickname.strip() ~ ": *\n";
+				s_comments ~= "*" ~ cmnt.nickname.strip() ~ "*\n";
 				s_comments ~= cmnt.text ~ "\n\n";
 				s_comments ~= cmnt.backlink ~ "\n\n";
 				s_comments ~= "---\n\n";
