@@ -1,1 +1,1 @@
-Version 1.0.1 (28.11.2011) by Bystroushaak (bystrousak@kitakitsune.org)
+Version 1.0.2 (05.12.2011) by Bystroushaak (bystrousak@kitakitsune.org)

@@ -25,9 +25,6 @@ Budoucí Často Kladené Otázky za předpokladu že program bude používat ně
 === Program umí sledovat jen komentáře ke článkům, nebo i webforum?
 Program umí sledovat vše kde se diskutuje, tedy i diskuze k uživateli, aktualitám a já nevím čemu ještě (fakt to nevím, detekuje to na základě slova {{{comments}}} v URL).
 
-=== Proč jsou titulky diskuze u článků bez názvu článku?
-Protože soom se tak prostě chová a jméno diskuze nelze jednoduše zjistit.
-
 === Funguje program i na Windows?
 D je mutiplatformní jazyk, takže s nějakými těmi triviálními úpravami ano, v základu však ne. Windows mě nezajímají, nepoužívám je. Pokud chcete verzi pro windows, zaplaťte si někoho (mě :P) kdo to upraví, nebo se naučte D, je to pěkný jazyk ;).
 
