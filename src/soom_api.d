@@ -4,7 +4,7 @@
  * Soom.cz API.
  * 
  * Author:  Bystroushaak (bystrousak@kitakitsune.org)
- * Date:    20.11.2011
+ * Date:    05.12.2011
  * 
  * Copyright: 
  *     This work is licensed under a CC BY.
@@ -57,7 +57,7 @@ struct Comment{
 		// deserialize comments from XML
 		foreach(c; parseString(std.file.readText(filename)).find("comment")){
 			comment.nickname = c.find("nickname")[0].getContent();
-			comment.backlink = c.find("backlink")[0].getContent();
+			comment.backlink = c.find("backlink")[0].getContent().replace("&amp;", "&");
 			comment.text     = c.find("text")[0].getContent();
 			
 			comments ~= comment;
@@ -83,6 +83,16 @@ struct Comment{
 
 /// Returns title of given url.
 string getTitle(string url){
+	// parse link to real title
+	if (url.indexOf("/comments") > 0){
+		foreach(k; ["articles", "recenze", "usertexts"]){
+			if (url.indexOf(k ~ "/") > 0){
+				url = url.replace("/comments", "/show");
+				break;
+			}
+		}
+	}
+	
 	auto dom = parseString(win1250ShitToUTF8(cl.get(url)));
 	return dom.find("title")[0].getContent().strip().replace("\n", " ").replace("SOOM.cz - ", "");
 }
@@ -164,9 +174,9 @@ Comment[] getWebforumComments(string url){
 /// wrapper for getWebforumComments && getArticleComments
 Comment[] getComments(string url){
 	string url_l = url.toLower();
-	if (url_l.indexOf("webforum/show") > 0 || url_l.indexOf("bugtrack/show") > 0)
+	if (url_l.indexOf("webforum/show") > 0 || url_l.indexOf("bugtrack/show") > 0 || url_l.indexOf("hardware/show") > 0)
 		return getWebforumComments(url);
-	else if (url_l.indexOf("discussion/main") > 0 || url_l.indexOf("comments") > 0)
+	else if (url_l.indexOf("discussion/main") > 0 || url_l.indexOf("/comments") > 0)
 		return getArticleComments(url);
 	
 	throw new Exception("Unknown type of URL!");
