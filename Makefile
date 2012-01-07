@@ -35,6 +35,7 @@ all: modules $(OBJS)
 	
 	@echo "Striping binaries:"
 	-strip $(BIND)/*
+	-upx $(PROG)
 	
 	@echo "Successfully compiled"
 
