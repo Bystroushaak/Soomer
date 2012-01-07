@@ -5,7 +5,7 @@
  * upozorni na ni emailem uzivatele.
  * 
  * Author:  Bystroushaak (bystrousak@kitakitsune.org)
- * Date:    28.11.2011
+ * Date:    07.01.2012
  * 
  * Copyright: 
  *     This work is licensed under a CC BY.
@@ -175,6 +175,10 @@ int main(string[] args){
 			
 			// skip crap
 			if (! l.toLower().startsWith("http://") || l.toLower().indexOf("soom.cz") <= 0)
+				continue;
+			
+			if (! (l.indexOf("webforum/show") > 0 || l.indexOf("bugtrack/show") > 0 || l.indexOf("hardware/show") > 0 ||
+			       l.indexOf("discussion/main") > 0 || l.indexOf("/comments") > 0))
 				continue;
 			
 			url.url = l;

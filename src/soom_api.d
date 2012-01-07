@@ -42,7 +42,7 @@ struct Comment{
 		auto dom = new HTMLElement([ // container
 			new HTMLElement("comment", [
 				new HTMLElement("nickname", [new HTMLElement(nickname)]),
-				new HTMLElement("backlink", [new HTMLElement(backlink.replace("&amp;", "&"))]),
+				new HTMLElement("backlink", [new HTMLElement(backlink)]),
 				new HTMLElement("text", [new HTMLElement(text)])
 			])
 		]);
@@ -151,7 +151,7 @@ Comment[] getWebforumComments(string url){
 		// parse baclink
 		tmp = e.find("a", ["title":"Link"]);
 		if (tmp.length >= 1)
-			comment.backlink = "http://soom.cz/" ~ tmp[0].params["href"].replace("&amp;", "&");
+			comment.backlink = "http://soom.cz/" ~ tmp[0].params["href"];
 		
 		// parse text
 		int io;
