@@ -42,7 +42,7 @@ struct Comment{
 		auto dom = new HTMLElement([ // container
 			new HTMLElement("comment", [
 				new HTMLElement("nickname", [new HTMLElement(nickname)]),
-				new HTMLElement("backlink", [new HTMLElement(backlink)]),
+				new HTMLElement("backlink", [new HTMLElement(backlink.replace("&amp;", "&"))]),
 				new HTMLElement("text", [new HTMLElement(text)])
 			])
 		]);
@@ -121,7 +121,7 @@ Comment[] getArticleComments(string url){
 		// remove user sign
 		int io;
 		if ((io = comment.text.indexOf("----------")) > 0)
-			comment.text = comment.text[0 .. io];
+			comment.text = comment.text[0 .. io].replace("&amp;", "&");
 		
 		comment.text = comment.text.replace("<br />\r\n", "").replace("<br />\n\r", "").replace("<br />\n", "").strip(); //mg..
 		comments ~= comment;
@@ -151,17 +151,17 @@ Comment[] getWebforumComments(string url){
 		// parse baclink
 		tmp = e.find("a", ["title":"Link"]);
 		if (tmp.length >= 1)
-			comment.backlink = "http://soom.cz/" ~ tmp[0].params["href"];
+			comment.backlink = "http://soom.cz/" ~ tmp[0].params["href"].replace("&amp;", "&");
 		
 		// parse text
 		int io;
 		comment.text = e.findB("tr")[1].find("td")[0].getContent();
 		if ((io = comment.text.indexOf("<br>")) > 0 && comment.text.length > 2)
-			comment.text = comment.text[0 .. io - 1];
+			comment.text = comment.text[0 .. io - 1].replace("&amp;", "&");
 		
 		// remove user sign
 		if ((io = comment.text.indexOf("----------")) > 0)
-			comment.text = comment.text[0 .. io];
+			comment.text = comment.text[0 .. io].replace("&amp;", "&");
 		
 		comment.text = comment.text.replace("<br />\n", "").strip();
 		
