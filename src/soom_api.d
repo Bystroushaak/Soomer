@@ -4,7 +4,7 @@
  * Soom.cz API.
  * 
  * Author:  Bystroushaak (bystrousak@kitakitsune.org)
- * Date:    05.12.2011
+ * Date:    30.07.2013
  * 
  * Copyright: 
  *     This work is licensed under a CC BY.
@@ -119,7 +119,7 @@ Comment[] getArticleComments(string url){
 			comment.text = tmp[1].childs[0].getContent();
 		
 		// remove user sign
-		int io;
+		long io;
 		if ((io = comment.text.indexOf("----------")) > 0)
 			comment.text = comment.text[0 .. io].replace("&amp;", "&");
 		
@@ -154,7 +154,7 @@ Comment[] getWebforumComments(string url){
 			comment.backlink = "http://soom.cz/" ~ tmp[0].params["href"].replace("&amp;", "&");
 		
 		// parse text
-		int io;
+		long io;
 		comment.text = e.findB("tr")[1].find("td")[0].getContent();
 		if ((io = comment.text.indexOf("<br>")) > 0 && comment.text.length > 2)
 			comment.text = comment.text[0 .. io - 1].replace("&amp;", "&");

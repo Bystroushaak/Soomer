@@ -5,7 +5,7 @@
  * upozorni na ni emailem uzivatele.
  * 
  * Author:  Bystroushaak (bystrousak@kitakitsune.org)
- * Date:    07.01.2012
+ * Date:    30.07.2013
  * 
  * Copyright: 
  *     This work is licensed under a CC BY.
@@ -42,7 +42,7 @@ struct URL{
 	
 	/// Return list of URLs parsed from filename
 	static URL[] readURLs(string filename){
-		int io;
+		long io;
 		URL tmp;
 		URL[] o;
 		
