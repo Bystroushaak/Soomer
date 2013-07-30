@@ -119,8 +119,8 @@ Comment[] getArticleComments(string url){
 			comment.text = tmp[1].childs[0].getContent();
 		
 		// remove user sign
-		long io;
-		if ((io = comment.text.indexOf("----------")) > 0)
+		int io;
+		if ((io = cast(int) comment.text.indexOf("----------")) > 0)
 			comment.text = comment.text[0 .. io].replace("&amp;", "&");
 		
 		comment.text = comment.text.replace("<br />\r\n", "").replace("<br />\n\r", "").replace("<br />\n", "").strip(); //mg..
@@ -154,13 +154,13 @@ Comment[] getWebforumComments(string url){
 			comment.backlink = "http://soom.cz/" ~ tmp[0].params["href"].replace("&amp;", "&");
 		
 		// parse text
-		long io;
+		int io;
 		comment.text = e.findB("tr")[1].find("td")[0].getContent();
-		if ((io = comment.text.indexOf("<br>")) > 0 && comment.text.length > 2)
+		if ((io = cast(int) comment.text.indexOf("<br>")) > 0 && comment.text.length > 2)
 			comment.text = comment.text[0 .. io - 1].replace("&amp;", "&");
 		
 		// remove user sign
-		if ((io = comment.text.indexOf("----------")) > 0)
+		if ((io = cast(int) comment.text.indexOf("----------")) > 0)
 			comment.text = comment.text[0 .. io].replace("&amp;", "&");
 		
 		comment.text = comment.text.replace("<br />\n", "").strip();

@@ -42,12 +42,12 @@ struct URL{
 	
 	/// Return list of URLs parsed from filename
 	static URL[] readURLs(string filename){
-		long io;
+		int io;
 		URL tmp;
 		URL[] o;
 		
 		foreach(string l; lines(File(filename, "r"))){
-			if ((io = l.indexOf(";")) > 0){
+			if ((io = cast(int) l.indexOf(";")) > 0){
 				tmp.url   = l[0 .. io];
 				tmp.title = l[io + 2 .. $ - 1]; // remove \n from the end
 				
